@@ -32,7 +32,6 @@ public class ClientLogAction extends LogViewerAction {
         }
 
         log.log(Level.FINE, "Viewing client log file: {0}", logFilename);
-        File f = new File(logFilename);
-        viewLog(f);
+        viewLog(logFilename);
     }
 }

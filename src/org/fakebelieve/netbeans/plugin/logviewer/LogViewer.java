@@ -5,10 +5,15 @@
 package org.fakebelieve.netbeans.plugin.logviewer;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,16 +26,20 @@ import org.openide.windows.InputOutput;
 public class LogViewer implements Runnable {
 
     private static final Logger log = Logger.getLogger(LogViewer.class.getName());
-    boolean shouldStop = false;
+    private boolean shouldStop = false;
     private ContextLogSupport logSupport;
-    FileInputStream filestream = null;
-    BufferedReader ins;
-    InputOutput io;
-    File fileName;
-    String ioName;
-    int lines;
-    Ring ring;
+    private InputStream logStream = null;
+    private BufferedReader logReader = null;
+    private InputOutput io;
+    private String logConfig;
+    private String ioName;
+    private int maxLines = -1;
+    private int oldLines = 2000;
+    private int bufferLines = 2000;
+    private int linesRead;
+    private Ring ring;
     private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+    private Process process = null;
 
     /**
      * Connects a given process to the output window. Returns immediately, but threads are started that
@@ -39,22 +48,20 @@ public class LogViewer implements Runnable {
      * @param process process whose streams to connect to the output window
      * @param ioName name of the output window tab to use
      */
-    public LogViewer(final File fileName, final String ioName) {
-        this.fileName = fileName;
+    public LogViewer(String logConfig, final String ioName) {
+        this.logConfig = logConfig;
         this.ioName = ioName;
         logSupport = new ContextLogSupport("/tmp", null);
     }
 
     private void init() {
-        final int LINES = 2000;
-        final int OLD_LINES = 2000;
-        ring = new Ring(OLD_LINES);
-        String line;
+        ring = new Ring(oldLines);
 
         // Read the log file without
         // displaying everything
         try {
-            while ((line = ins.readLine()) != null) {
+            String line;
+            while (logReader.ready() && (line = logReader.readLine()) != null) {
                 ring.add(line);
             } // end of while ((line = ins.readLine()) != null)
         } catch (IOException e) {
@@ -62,29 +69,27 @@ public class LogViewer implements Runnable {
         } // end of try-catch
 
         // Now show the last OLD_LINES
-        lines = ring.output();
-        ring.setMaxCount(LINES);
+        linesRead = ring.output();
+        ring.setMaxCount(bufferLines);
+        System.err.println("Done reading file");
     }
 
     @Override
     public void run() {
-        final int MAX_LINES = 10000;
-        String line;
-
-        shouldStop = io.isClosed();
-
-        if (!shouldStop) {
+        System.err.println(ioName + " - isClosed() = " + io.isClosed());
+        if (!shouldStop && !io.isClosed()) {
             try {
-                if (lines >= MAX_LINES) {
+                if (maxLines > 0 && linesRead >= maxLines) {
                     io.getOut().reset();
-                    lines = ring.output();
+                    linesRead = ring.output();
                 } // end of if (lines >= MAX_LINES)
 
-                while ((line = ins.readLine()) != null) {
+                String line;
+                while (logReader.ready() && (line = logReader.readLine()) != null) {
                     if ((line = ring.add(line)) != null) {
                         //io.getOut().println(line);
                         processLine(line);
-                        lines++;
+                        linesRead++;
                     } // end of if ((line = ring.add(line)) != null)
                 }
 
@@ -103,11 +108,41 @@ public class LogViewer implements Runnable {
      **/
     public void showLogViewer() throws IOException {
         shouldStop = false;
-        io = IOProvider.getDefault().getIO(ioName, false);
+
+        io = IOProvider.getDefault().getIO(ioName, true);
         io.getOut().reset();
         io.select();
-        filestream = new FileInputStream(fileName);
-        ins = new BufferedReader(new InputStreamReader(filestream));
+
+        try {
+            if (!logConfig.startsWith("!")) {
+                File logFile = new File(logConfig);
+                logStream = new FileInputStream(logFile);
+                logReader = new BufferedReader(new InputStreamReader(logStream));
+                System.err.println("Started reader.");
+            } else {
+                ProcessBuilder processBuilder = new ProcessBuilder();
+                processBuilder.command("/bin/sh", "-c", logConfig.substring(1).trim());
+                processBuilder.redirectErrorStream(true);
+                process = processBuilder.start();
+                logStream = process.getInputStream();
+                logReader = new BufferedReader(new InputStreamReader(logStream));
+                System.err.println("Started process.");
+            }
+        } catch (IOException ex) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            PrintStream pout = new PrintStream(out);
+
+            if (ex instanceof FileNotFoundException) {
+                pout.println("File \"" + logConfig + "\" Not Found.");
+            } else {
+                ex.printStackTrace(pout);
+                pout.flush();
+            }
+            
+            logStream = new ByteArrayInputStream(out.toByteArray());
+            logReader = new BufferedReader(new InputStreamReader(logStream));
+            System.err.println("Showing error.");
+        }
 
         init();
         task.schedule(0);
@@ -117,9 +152,14 @@ public class LogViewer implements Runnable {
      *
      **/
     public void stopUpdatingLogViewer() {
+        System.err.println("in stopUpdatingLogViewer()");
         try {
-            ins.close();
-            filestream.close();
+            logReader.close();
+            logStream.close();
+            if (process != null) {
+                process.destroy();
+                process = null;
+            }
             io.closeInputOutput();
             io.setOutputVisible(false);
         } catch (IOException e) {
@@ -190,7 +230,6 @@ public class LogViewer implements Runnable {
         public int output() {
             int i = 0;
             for (String s : anchor) {
-                //io.getOut().println(s);
                 processLine(s);
                 i++;
             }

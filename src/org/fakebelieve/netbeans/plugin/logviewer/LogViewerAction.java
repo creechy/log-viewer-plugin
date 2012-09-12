@@ -47,7 +47,7 @@ public class LogViewerAction extends CallableSystemAction {
         return logViewer;
     }
 
-    public void viewLog(File f) {
+    public void viewLog(String f) {
         LogViewer p = new LogViewer(f, getName());
         try {
             p.showLogViewer();

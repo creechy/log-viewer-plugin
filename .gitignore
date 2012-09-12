@@ -4,3 +4,11 @@
 *.jar
 *.war
 *.ear
+
+# Build Files #
+build
+build/*
+
+# NB Private #
+nbproject/private
+nbproject/private/*

@@ -42,9 +42,9 @@
 package org.fakebelieve.netbeans.plugin.logviewer;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -141,6 +141,7 @@ public class LogSupport {
             return accessible;
         }
 
+        @Override
         public String toString() {
             return "path=" + path + " line=" + line + " message=" + message
                     + " isError=" + error + " isAccessible=" + accessible;
@@ -157,10 +158,12 @@ public class LogSupport {
             shortDesc = desc;
         }
 
+        @Override
         public String getAnnotationType() {
             return "org-netbeans-modules-tomcat5-error"; // NOI18N
         }
 
+        @Override
         public String getShortDescription() {
             return shortDesc;
         }
@@ -186,6 +189,7 @@ public class LogSupport {
             this.line = line;
         }
 
+        @Override
         public int hashCode() {
             if (hashCode == 0) {
                 int result = 17;
@@ -197,14 +201,15 @@ public class LogSupport {
             return hashCode;
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
             if (obj instanceof Link) {
                 Link anotherLink = (Link)obj;
-                if ((((msg != null) && msg.equals(anotherLink.msg)) || (msg == anotherLink.msg))
-                    && (((path != null) && path.equals(anotherLink.path)) || (path == anotherLink.path))
+                if ((((msg != null) && msg.equals(anotherLink.msg)) || (msg == null ? anotherLink.msg == null : msg.equals(anotherLink.msg)))
+                    && (((path != null) && path.equals(anotherLink.path)) || (path == null ? anotherLink.path == null : path.equals(anotherLink.path)))
                     && line == anotherLink.line) {
                         return true;
                 }
@@ -216,6 +221,7 @@ public class LogSupport {
          * If the link is clicked, required file is opened in the editor and an
          * <code>ErrorAnnotation</code> is attached.
          */
+        @Override
         public void outputLineAction(OutputEvent ev) {
             FileObject sourceFile = GlobalPathRegistry.getDefault().findResource(path);
             if (sourceFile == null) {
@@ -230,12 +236,12 @@ public class LogSupport {
                 }
             }
             if (dataObject != null) {
-                EditorCookie editorCookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
+                EditorCookie editorCookie = (EditorCookie)dataObject.getLookup().lookup(EditorCookie.class);
                 if (editorCookie == null) {
                     return;
                 }
                 editorCookie.open();
-                Line errorLine = null;
+                Line errorLine;
                 try {
                     errorLine = editorCookie.getLineSet().getCurrent(line - 1);
                 } catch (IndexOutOfBoundsException iobe) {
@@ -259,6 +265,7 @@ public class LogSupport {
          * If a link is cleared, error annotation is detached and link cache is
          * clared.
          */
+        @Override
         public void outputLineCleared(OutputEvent ev) {
             if (errAnnot != null) {
                 errAnnot.detach();
@@ -268,6 +275,7 @@ public class LogSupport {
             }
         }
 
+        @Override
         public void outputLineSelected(OutputEvent ev) {
         }
     }
