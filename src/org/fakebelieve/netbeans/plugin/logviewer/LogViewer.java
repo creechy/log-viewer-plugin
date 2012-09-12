@@ -132,6 +132,9 @@ public class LogViewer implements Runnable {
                 File logFile = new File(logConfig);
                 logStream = new FileInputStream(logFile);
                 logReader = new BufferedReader(new InputStreamReader(logStream));
+                io.getOut().println("*** -> " + logConfig);
+                io.getOut().println("***");
+                io.getOut().println();
                 log.log(Level.FINE, "Started reader.");
             } else {
                 ProcessBuilder processBuilder = new ProcessBuilder();
@@ -141,6 +144,9 @@ public class LogViewer implements Runnable {
                 procMgr.add(process);
                 logStream = process.getInputStream();
                 logReader = new BufferedReader(new InputStreamReader(logStream));
+                io.getOut().println("*** -> " + logConfig.substring(1).trim());
+                io.getOut().println("***");
+                io.getOut().println();
                 log.log(Level.FINE,"Started process.");
             }
         } catch (IOException ex) {
