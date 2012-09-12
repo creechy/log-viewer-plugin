@@ -22,9 +22,15 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
+/*
+ * Netbeans Logging Levels - add option "-J-Dorg.netbeans.level=FINEST" into netbeans.conf file.
+ */
+
 public class LogViewer implements Runnable {
 
     private static final Logger log = Logger.getLogger(LogViewer.class.getName());
+    private static ProcessManager procMgr = new ProcessManager();
+
     private boolean shouldStop = false;
     private ContextLogSupport logSupport;
     private InputStream logStream = null;
@@ -32,8 +38,9 @@ public class LogViewer implements Runnable {
     private InputOutput io;
     private String logConfig;
     private String ioName;
+    private int refreshInterval = 10;
     private int maxLines = -1;
-    private int oldLines = 2000;
+    private int lookbackLines = 2000;
     private int bufferLines = 2000;
     private int linesRead;
     private Ring ring;
@@ -53,8 +60,16 @@ public class LogViewer implements Runnable {
         logSupport = new ContextLogSupport("/tmp", null);
     }
 
+    public void setLookbackLines(int lookbackLines) {
+        this.lookbackLines = lookbackLines;
+    }
+
+    public void setRefreshInterval(int refreshInterval) {
+        this.refreshInterval = refreshInterval;
+    }
+
     private void init() {
-        ring = new Ring(oldLines);
+        ring = new Ring(lookbackLines);
 
         // Read the log file without
         // displaying everything
@@ -70,12 +85,12 @@ public class LogViewer implements Runnable {
         // Now show the last OLD_LINES
         linesRead = ring.output();
         ring.setMaxCount(bufferLines);
-        System.err.println("Done reading file");
+        log.log(Level.FINE, "Done reading file.");
     }
 
     @Override
     public void run() {
-        System.err.println(ioName + " - isClosed() = " + io.isClosed());
+        log.log(Level.FINE, "{0} - isClosed() = {1}", new Object[]{ioName, io.isClosed()});
         if (!shouldStop && !io.isClosed()) {
             try {
                 if (maxLines > 0 && linesRead >= maxLines) {
@@ -95,7 +110,7 @@ public class LogViewer implements Runnable {
             } catch (IOException e) {
                 log.log(Level.SEVERE, "Failed reading log file and printing to output.", e);
             }
-            task.schedule(10000);
+            task.schedule(refreshInterval * 1000);
         } else {
             ///System.out.println("end of infinite loop for log viewer\n\n\n\n");
             stopUpdatingLogViewer();
@@ -117,15 +132,16 @@ public class LogViewer implements Runnable {
                 File logFile = new File(logConfig);
                 logStream = new FileInputStream(logFile);
                 logReader = new BufferedReader(new InputStreamReader(logStream));
-                System.err.println("Started reader.");
+                log.log(Level.FINE, "Started reader.");
             } else {
                 ProcessBuilder processBuilder = new ProcessBuilder();
                 processBuilder.command("/bin/sh", "-c", logConfig.substring(1).trim());
                 processBuilder.redirectErrorStream(true);
                 process = processBuilder.start();
+                procMgr.add(process);
                 logStream = process.getInputStream();
                 logReader = new BufferedReader(new InputStreamReader(logStream));
-                System.err.println("Started process.");
+                log.log(Level.FINE,"Started process.");
             }
         } catch (IOException ex) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -140,7 +156,7 @@ public class LogViewer implements Runnable {
             
             logStream = new ByteArrayInputStream(out.toByteArray());
             logReader = new BufferedReader(new InputStreamReader(logStream));
-            System.err.println("Showing error.");
+            log.log(Level.FINE,"Showing error.");
         }
 
         init();
@@ -151,12 +167,13 @@ public class LogViewer implements Runnable {
      *
      **/
     public void stopUpdatingLogViewer() {
-        System.err.println("in stopUpdatingLogViewer()");
+        log.log(Level.FINE, "Stopping Log Viewer.");
         try {
             logReader.close();
             logStream.close();
             if (process != null) {
                 process.destroy();
+                procMgr.remove(process);
                 process = null;
             }
             io.closeInputOutput();
@@ -168,8 +185,6 @@ public class LogViewer implements Runnable {
 
     private void processLine(String line) {
         ContextLogSupport.LineInfo lineInfo = logSupport.analyzeLine(line);
-        //System.err.println(line);
-        //System.err.println("   " + lineInfo);
         if (lineInfo.isError()) {
             if (lineInfo.isAccessible()) {
                 try {

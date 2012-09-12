@@ -4,6 +4,9 @@
  */
 package org.fakebelieve.netbeans.plugin.logviewer;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+
 /**
  *
  * @author mock
@@ -15,12 +18,28 @@ public class LogViewerPanel extends javax.swing.JPanel {
      */
     public LogViewerPanel() {
         initComponents();
+        lookbackConfig.setSelectedIndex(2);
+        refreshConfig.setSelectedIndex(2);
     }
 
-    public String getLogFile() {
-        return jTextField1.getText();
+    public void setLogHistory(String[] objects) {
+        DefaultComboBoxModel model = (DefaultComboBoxModel) logConfig.getModel();
+        for (String object : objects) {
+            model.addElement(object);
+        }
     }
 
+    public String getLogConfig() {
+        return logConfig.getSelectedItem().toString();
+    }
+
+    public String getLookbackConfig() {
+        return lookbackConfig.getSelectedItem().toString();
+    }
+
+    public String getRefreshConfig() {
+        return refreshConfig.getSelectedItem().toString();
+    }
 
     /**
      * This method is called from within the constructor to
@@ -33,14 +52,27 @@ public class LogViewerPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
+        logConfig = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        refreshConfig = new javax.swing.JComboBox();
+        jLabel4 = new javax.swing.JLabel();
+        lookbackConfig = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jLabel1.text")); // NOI18N
 
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jTextField1.text")); // NOI18N
-
+        jLabel3.setFont(new java.awt.Font("Lucida Grande", 2, 13)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jLabel3.text")); // NOI18N
+
+        logConfig.setEditable(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jLabel2.text")); // NOI18N
+
+        refreshConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "5", "10", "15", "30", "45", "60" }));
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jLabel4.text")); // NOI18N
+
+        lookbackConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "500", "1000", "2000", "4000", "8000" }));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -50,14 +82,25 @@ public class LogViewerPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(6, 6, 6)
-                        .add(jLabel3)
-                        .addContainerGap(12, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextField1)
-                        .addContainerGap())))
+                        .add(logConfig, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(6, 6, 6)
+                                .add(jLabel3))
+                            .add(layout.createSequentialGroup()
+                                .add(27, 27, 27)
+                                .add(jLabel2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(refreshConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(33, 33, 33)
+                                .add(jLabel4)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                                .add(lookbackConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .add(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -65,15 +108,25 @@ public class LogViewerPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(logConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel2)
+                    .add(refreshConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4)
+                    .add(lookbackConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JComboBox logConfig;
+    private javax.swing.JComboBox lookbackConfig;
+    private javax.swing.JComboBox refreshConfig;
     // End of variables declaration//GEN-END:variables
 }

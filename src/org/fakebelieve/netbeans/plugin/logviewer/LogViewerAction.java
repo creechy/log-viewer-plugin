@@ -4,16 +4,16 @@
  */
 package org.fakebelieve.netbeans.plugin.logviewer;
 
-import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CallableSystemAction;
 
-public class LogViewerAction extends CallableSystemAction {
+public class LogViewerAction {
 
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
+    protected Map values = new HashMap();
 
     public static LogViewerAction getLogViewerAction(Map map) {
         Object o = map.get("viewerAction");
@@ -49,6 +49,9 @@ public class LogViewerAction extends CallableSystemAction {
 
     public void viewLog(String f) {
         LogViewer p = new LogViewer(f, getName());
+        p.setLookbackLines(Integer.parseInt((String) getValue("lookback")));
+        p.setRefreshInterval(Integer.parseInt((String) getValue("refresh")));
+        
         try {
             p.showLogViewer();
         } catch (java.io.IOException e) {
@@ -56,23 +59,27 @@ public class LogViewerAction extends CallableSystemAction {
         }
     }
 
-    @Override
     public void performAction() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
     public String getName() {
         return (String) getValue("displayName");
     }
 
-    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    @Override
-    public String iconResource() {
+        public String iconResource() {
         return "org/fakebelieve/netbeans/plugin/logviewer/wilbur.png"; // NOI18N
+    }
+
+    public Object getValue(String key) {
+        return values.get(key);
+   }
+
+    public void putValue(String key, Object value) {
+        values.put(key, value);
     }
 }
