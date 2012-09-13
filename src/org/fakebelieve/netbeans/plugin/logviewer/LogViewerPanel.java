@@ -72,7 +72,7 @@ public class LogViewerPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jLabel4.text")); // NOI18N
 
-        lookbackConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "500", "1000", "2000", "4000", "8000" }));
+        lookbackConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "0", "500", "1000", "2000", "4000", "8000" }));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

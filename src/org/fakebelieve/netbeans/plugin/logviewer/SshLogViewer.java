@@ -33,7 +33,9 @@ public class SshLogViewer extends ProcessLogViewer {
         String userHost = logConfig.substring(5, pathStart);
         String logPath = logConfig.substring(pathStart);
 
-        logConfig = "ssh " + userHost + " tail -f \"" + logPath + "\"";
+        String lookback = (lookbackLines != 0) ? (" -n " + lookbackLines):"";
+
+        logConfig = "ssh " + userHost + " tail" + lookback + " -f \"" + logPath + "\"";
 
         super.configViewer();
     }
