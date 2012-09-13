@@ -34,7 +34,20 @@ public class ProcessLogViewer extends LogViewer {
 
     @Override
     public boolean checkShouldStop() {
-        return shouldStop;
+        // Try to get the process exit value. If we get one,
+        // the process has ended, so we should stop.
+
+        // Otherwise we'll get an exception which means the
+        // process is still running.
+
+        try {
+            process.exitValue();
+            return true;
+        } catch (IllegalThreadStateException ex) {
+            // IGNORE
+        }
+        
+        return super.checkShouldStop();
     }
 
     @Override
@@ -65,5 +78,4 @@ public class ProcessLogViewer extends LogViewer {
         process = null;
         super.stopUpdatingLogViewer();
     }
-
 }
