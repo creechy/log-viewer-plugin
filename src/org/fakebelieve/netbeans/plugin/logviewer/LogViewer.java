@@ -38,6 +38,7 @@ public class LogViewer implements Runnable {
     private String logConfig;
     private String ioName;
     private int refreshInterval = 10;
+    private int intervalCount = 0;
     private int maxLines = -1;
     private int lookbackLines = 2000;
     private int bufferLines = 2000;
@@ -113,7 +114,10 @@ public class LogViewer implements Runnable {
             } catch (IOException e) {
                 log.log(Level.SEVERE, "Failed reading log file and printing to output.", e);
             }
-            task.schedule(refreshInterval * 1000);
+
+            // For the first few intervals, update every second, just to make sure
+            // we catch up quickly.
+            task.schedule((intervalCount++ < 10) ? 1000:(refreshInterval * 1000));
         } else {
             stopUpdatingLogViewer();
         }
