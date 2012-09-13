@@ -7,8 +7,6 @@ package org.fakebelieve.netbeans.plugin.logviewer;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +26,7 @@ import org.openide.windows.InputOutput;
 public class LogViewer implements Runnable {
 
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
-    protected ContextLogSupport logSupport;
+    ContextLogSupport logSupport;
     protected InputStream logStream = null;
     protected BufferedReader logReader = null;
     protected LineReader lineReader = null;
@@ -42,7 +40,7 @@ public class LogViewer implements Runnable {
     protected int lookbackLines = 2000;
     protected int bufferLines = 2000;
     protected int linesRead;
-    protected Ring ring;
+    Ring ring;
     protected final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
 
     /**
@@ -172,8 +170,11 @@ public class LogViewer implements Runnable {
         try {
             logReader.close();
             logStream.close();
-            io.closeInputOutput();
-            io.setOutputVisible(false);
+            io.getOut().println();
+            io.getOut().println("***");
+            io.getOut().println("*** monitoring ended.");
+            //io.closeInputOutput();
+            //io.setOutputVisible(false);
         } catch (IOException e) {
             log.log(Level.SEVERE, "Failed to close log file streams.", e);
         }
@@ -205,7 +206,7 @@ public class LogViewer implements Runnable {
         }
     }
 
-    private class Ring {
+    class Ring {
 
         private int maxCount;
         private int count;
