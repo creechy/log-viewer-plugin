@@ -84,6 +84,9 @@ public class LogViewerButtonAction implements ActionListener {
             updateHistory(logHistory, logConfig);
             
             String logName = (logConfig.startsWith("!")) ? logConfig.substring(1).trim() : logConfig.trim();
+            if (logName.length() > 40) {
+                logName = logName.substring(0, 20) + "..." + logName.substring(logName.length() - 20);
+            }
 
             // REMIND: This seems a little backwards, should probably rework it.
             Map map = new HashMap();

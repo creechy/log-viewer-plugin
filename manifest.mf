@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.fakebelieve.netbeans.plugin.logviewer
 OpenIDE-Module-Localizing-Bundle: org/fakebelieve/netbeans/plugin/logviewer/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0.1
 
