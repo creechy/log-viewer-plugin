@@ -6,9 +6,7 @@
 *.ear
 
 # Build Files #
-build
-build/*
+build/
 
 # NB Private #
-nbproject/private
-nbproject/private/*
+nbproject/private/
