@@ -74,7 +74,7 @@ public class LogViewerButtonAction implements ActionListener {
         List<String> logHistory = loadHistory();
         myPanel.setLogHistory(logHistory.toArray(new String[0]));
 
-        DialogDescriptor dd = new DialogDescriptor(myPanel, "Log Viewer");
+        DialogDescriptor dd = new DialogDescriptor(myPanel, "Log Viewer Chooser");
 
         // let's display the dialog now...
         if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
@@ -88,8 +88,8 @@ public class LogViewerButtonAction implements ActionListener {
             // REMIND: This seems a little backwards, should probably rework it.
             Map map = new HashMap();
             map.put("viewerAction", new LogViewerAction());
-            map.put("displayName", "Log - " + logName);
-            map.put("name", "Log - " + logName);
+            map.put("displayName", logName + " (log)");
+            map.put("name", logName + " (log)");
             map.put("lookback", myPanel.getLookbackConfig());
             map.put("refresh", myPanel.getRefreshConfig());
 
