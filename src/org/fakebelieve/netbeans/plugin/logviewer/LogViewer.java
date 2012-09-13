@@ -25,16 +25,15 @@ import org.openide.windows.InputOutput;
 /*
  * Netbeans Logging Levels - add option "-J-Dorg.netbeans.level=FINEST" into netbeans.conf file.
  */
-
 public class LogViewer implements Runnable {
 
     private static final Logger log = Logger.getLogger(LogViewer.class.getName());
     private static ProcessManager procMgr = new ProcessManager();
-
     private boolean shouldStop = false;
     private ContextLogSupport logSupport;
     private InputStream logStream = null;
     private BufferedReader logReader = null;
+    private LineReader lineReader = null;
     private InputOutput io;
     private String logConfig;
     private String ioName;
@@ -69,21 +68,25 @@ public class LogViewer implements Runnable {
     }
 
     private void init() {
+        log.log(Level.FINER, "Starting init()");
         ring = new Ring(lookbackLines);
 
         // Read the log file without
         // displaying everything
         try {
             String line;
-            while (logReader.ready() && (line = logReader.readLine()) != null) {
+            log.log(Level.FINER, "start reading ring() lines.");
+            while ((line = lineReader.readLine()) != null) {
                 ring.add(line);
             } // end of while ((line = ins.readLine()) != null)
+            log.log(Level.FINER, "finish reading ring() lines.");
         } catch (IOException e) {
             log.log(Level.SEVERE, "Failed reading log file.", e);
         } // end of try-catch
 
         // Now show the last OLD_LINES
         linesRead = ring.output();
+        log.log(Level.FINER, "displayed ring()");
         ring.setMaxCount(bufferLines);
         log.log(Level.FINE, "Done reading file.");
     }
@@ -99,7 +102,7 @@ public class LogViewer implements Runnable {
                 } // end of if (lines >= MAX_LINES)
 
                 String line;
-                while (logReader.ready() && (line = logReader.readLine()) != null) {
+                while ((line = lineReader.readLine()) != null) {
                     if ((line = ring.add(line)) != null) {
                         //io.getOut().println(line);
                         processLine(line);
@@ -112,7 +115,6 @@ public class LogViewer implements Runnable {
             }
             task.schedule(refreshInterval * 1000);
         } else {
-            ///System.out.println("end of infinite loop for log viewer\n\n\n\n");
             stopUpdatingLogViewer();
         }
     }
@@ -132,6 +134,8 @@ public class LogViewer implements Runnable {
                 File logFile = new File(logConfig);
                 logStream = new FileInputStream(logFile);
                 logReader = new BufferedReader(new InputStreamReader(logStream));
+                lineReader = new LineReader(logReader);
+
                 io.getOut().println("*** -> " + logConfig);
                 io.getOut().println("***");
                 io.getOut().println();
@@ -144,10 +148,12 @@ public class LogViewer implements Runnable {
                 procMgr.add(process);
                 logStream = process.getInputStream();
                 logReader = new BufferedReader(new InputStreamReader(logStream));
+                lineReader = new LineReader(logReader);
+
                 io.getOut().println("*** -> " + logConfig.substring(1).trim());
                 io.getOut().println("***");
                 io.getOut().println();
-                log.log(Level.FINE,"Started process.");
+                log.log(Level.FINE, "Started process.");
             }
         } catch (IOException ex) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -159,10 +165,12 @@ public class LogViewer implements Runnable {
                 ex.printStackTrace(pout);
                 pout.flush();
             }
-            
+
             logStream = new ByteArrayInputStream(out.toByteArray());
             logReader = new BufferedReader(new InputStreamReader(logStream));
-            log.log(Level.FINE,"Showing error.");
+            lineReader = new LineReader(logReader);
+
+            log.log(Level.FINE, "Showing error.");
         }
 
         init();
