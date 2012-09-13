@@ -29,7 +29,6 @@ public class LogViewer implements Runnable {
 
     private static final Logger log = Logger.getLogger(LogViewer.class.getName());
     private static ProcessManager procMgr = new ProcessManager();
-    private boolean shouldStop = false;
     private ContextLogSupport logSupport;
     private InputStream logStream = null;
     private BufferedReader logReader = null;
@@ -37,6 +36,7 @@ public class LogViewer implements Runnable {
     private InputOutput io;
     private String logConfig;
     private String ioName;
+    private boolean shouldStop = false;
     private int refreshInterval = 10;
     private int intervalCount = 0;
     private int maxLines = -1;
@@ -92,10 +92,14 @@ public class LogViewer implements Runnable {
         log.log(Level.FINE, "Done reading file.");
     }
 
+    public boolean checkShouldStop() {
+        return shouldStop;
+    }
+
     @Override
     public void run() {
         log.log(Level.FINE, "{0} - isClosed() = {1}", new Object[]{ioName, io.isClosed()});
-        if (!shouldStop && !io.isClosed()) {
+        if (!checkShouldStop() && !io.isClosed()) {
             try {
                 if (maxLines > 0 && linesRead >= maxLines) {
                     io.getOut().reset();
@@ -117,48 +121,52 @@ public class LogViewer implements Runnable {
 
             // For the first few intervals, update every second, just to make sure
             // we catch up quickly.
-            task.schedule((intervalCount++ < 10) ? 1000:(refreshInterval * 1000));
+            task.schedule((intervalCount++ < 10) ? 1000 : (refreshInterval * 1000));
         } else {
             stopUpdatingLogViewer();
         }
+    }
+
+    public void configViewer() throws IOException {
+
+        if (!logConfig.startsWith("!")) {
+            File logFile = new File(logConfig);
+            logStream = new FileInputStream(logFile);
+            logReader = new BufferedReader(new InputStreamReader(logStream));
+            lineReader = new LineReader(logReader);
+
+            io.getOut().println("*** -> " + logConfig);
+            io.getOut().println("***");
+            io.getOut().println();
+            log.log(Level.FINE, "Started reader.");
+        } else {
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.command("/bin/sh", "-c", logConfig.substring(1).trim());
+            processBuilder.redirectErrorStream(true);
+            process = processBuilder.start();
+            procMgr.add(process);
+            logStream = process.getInputStream();
+            logReader = new BufferedReader(new InputStreamReader(logStream));
+            lineReader = new LineReader(logReader);
+
+            io.getOut().println("*** -> " + logConfig.substring(1).trim());
+            io.getOut().println("***");
+            io.getOut().println();
+            log.log(Level.FINE, "Started process.");
+        }
+
     }
 
     /* display the log viewer dialog
      *
      **/
     public void showLogViewer() throws IOException {
-        shouldStop = false;
-
         io = IOProvider.getDefault().getIO(ioName, true);
         io.getOut().reset();
         io.select();
 
         try {
-            if (!logConfig.startsWith("!")) {
-                File logFile = new File(logConfig);
-                logStream = new FileInputStream(logFile);
-                logReader = new BufferedReader(new InputStreamReader(logStream));
-                lineReader = new LineReader(logReader);
-
-                io.getOut().println("*** -> " + logConfig);
-                io.getOut().println("***");
-                io.getOut().println();
-                log.log(Level.FINE, "Started reader.");
-            } else {
-                ProcessBuilder processBuilder = new ProcessBuilder();
-                processBuilder.command("/bin/sh", "-c", logConfig.substring(1).trim());
-                processBuilder.redirectErrorStream(true);
-                process = processBuilder.start();
-                procMgr.add(process);
-                logStream = process.getInputStream();
-                logReader = new BufferedReader(new InputStreamReader(logStream));
-                lineReader = new LineReader(logReader);
-
-                io.getOut().println("*** -> " + logConfig.substring(1).trim());
-                io.getOut().println("***");
-                io.getOut().println();
-                log.log(Level.FINE, "Started process.");
-            }
+            configViewer();
         } catch (IOException ex) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             PrintStream pout = new PrintStream(out);
