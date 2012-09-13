@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.HelpCtx;
 
 public class LogViewerAction {
 
@@ -59,20 +58,8 @@ public class LogViewerAction {
         }
     }
 
-    public void performAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public String getName() {
         return (String) getValue("displayName");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-        public String iconResource() {
-        return "org/fakebelieve/netbeans/plugin/logviewer/wilbur.png"; // NOI18N
     }
 
     public Object getValue(String key) {

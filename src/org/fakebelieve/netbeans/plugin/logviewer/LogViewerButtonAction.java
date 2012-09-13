@@ -87,16 +87,14 @@ public class LogViewerButtonAction implements ActionListener {
 
             // REMIND: This seems a little backwards, should probably rework it.
             Map map = new HashMap();
-            map.put("viewerAction", new ClientLogAction());
-            map.put("userDirLogFile", "/var/log/messages.log");
-            map.put("logFile", logConfig);
+            map.put("viewerAction", new LogViewerAction());
             map.put("displayName", "Log - " + logName);
             map.put("name", "Log - " + logName);
             map.put("lookback", myPanel.getLookbackConfig());
             map.put("refresh", myPanel.getRefreshConfig());
 
             LogViewerAction logAction = LogViewerAction.getLogViewerAction(map);
-            logAction.performAction();
+            logAction.viewLog(logConfig);
         }
     }
 }
