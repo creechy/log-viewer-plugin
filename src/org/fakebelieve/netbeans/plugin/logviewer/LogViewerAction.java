@@ -46,15 +46,25 @@ public class LogViewerAction {
         return logViewer;
     }
 
-    public void viewLog(String f) {
-        LogViewer p = new LogViewer(f, getName());
-        p.setLookbackLines(Integer.parseInt((String) getValue("lookback")));
-        p.setRefreshInterval(Integer.parseInt((String) getValue("refresh")));
-        
-        try {
-            p.showLogViewer();
-        } catch (java.io.IOException e) {
-            log.log(Level.SEVERE, "Showing log action failed.", e);
+    public void viewLog(String config) {
+        LogViewer viewer = null;
+        if (FileLogViewer.handleConfig(config)) {
+            viewer = new FileLogViewer(config, getName());
+        } else if (ProcessLogViewer.handleConfig(config)) {
+            viewer = new ProcessLogViewer(config, getName());
+        } else if (SshLogViewer.handleConfig(config)) {
+            viewer = new SshLogViewer(config, getName());
+        }
+
+        if (viewer != null) {
+            viewer.setLookbackLines(Integer.parseInt((String) getValue("lookback")));
+            viewer.setRefreshInterval(Integer.parseInt((String) getValue("refresh")));
+
+            try {
+                viewer.showLogViewer();
+            } catch (java.io.IOException e) {
+                log.log(Level.SEVERE, "Showing log action failed.", e);
+            }
         }
     }
 
@@ -64,7 +74,7 @@ public class LogViewerAction {
 
     public Object getValue(String key) {
         return values.get(key);
-   }
+    }
 
     public void putValue(String key, Object value) {
         values.put(key, value);

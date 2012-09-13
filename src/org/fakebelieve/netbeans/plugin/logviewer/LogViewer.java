@@ -27,25 +27,23 @@ import org.openide.windows.InputOutput;
  */
 public class LogViewer implements Runnable {
 
-    private static final Logger log = Logger.getLogger(LogViewer.class.getName());
-    private static ProcessManager procMgr = new ProcessManager();
-    private ContextLogSupport logSupport;
-    private InputStream logStream = null;
-    private BufferedReader logReader = null;
-    private LineReader lineReader = null;
-    private InputOutput io;
-    private String logConfig;
-    private String ioName;
-    private boolean shouldStop = false;
-    private int refreshInterval = 10;
-    private int intervalCount = 0;
-    private int maxLines = -1;
-    private int lookbackLines = 2000;
-    private int bufferLines = 2000;
-    private int linesRead;
-    private Ring ring;
-    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
-    private Process process = null;
+    protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
+    protected ContextLogSupport logSupport;
+    protected InputStream logStream = null;
+    protected BufferedReader logReader = null;
+    protected LineReader lineReader = null;
+    protected InputOutput io;
+    protected String logConfig;
+    protected String ioName;
+    protected boolean shouldStop = false;
+    protected int refreshInterval = 10;
+    protected int intervalCount = 0;
+    protected int maxLines = -1;
+    protected int lookbackLines = 2000;
+    protected int bufferLines = 2000;
+    protected int linesRead;
+    protected Ring ring;
+    protected final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
 
     /**
      * Connects a given process to the output window. Returns immediately, but threads are started that
@@ -58,6 +56,10 @@ public class LogViewer implements Runnable {
         this.logConfig = logConfig;
         this.ioName = ioName;
         logSupport = new ContextLogSupport("/tmp", null);
+    }
+
+    public static boolean handleConfig(String logConfig) {
+        return false;
     }
 
     public void setLookbackLines(int lookbackLines) {
@@ -128,33 +130,6 @@ public class LogViewer implements Runnable {
     }
 
     public void configViewer() throws IOException {
-
-        if (!logConfig.startsWith("!")) {
-            File logFile = new File(logConfig);
-            logStream = new FileInputStream(logFile);
-            logReader = new BufferedReader(new InputStreamReader(logStream));
-            lineReader = new LineReader(logReader);
-
-            io.getOut().println("*** -> " + logConfig);
-            io.getOut().println("***");
-            io.getOut().println();
-            log.log(Level.FINE, "Started reader.");
-        } else {
-            ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.command("/bin/sh", "-c", logConfig.substring(1).trim());
-            processBuilder.redirectErrorStream(true);
-            process = processBuilder.start();
-            procMgr.add(process);
-            logStream = process.getInputStream();
-            logReader = new BufferedReader(new InputStreamReader(logStream));
-            lineReader = new LineReader(logReader);
-
-            io.getOut().println("*** -> " + logConfig.substring(1).trim());
-            io.getOut().println("***");
-            io.getOut().println();
-            log.log(Level.FINE, "Started process.");
-        }
-
     }
 
     /* display the log viewer dialog
@@ -197,11 +172,6 @@ public class LogViewer implements Runnable {
         try {
             logReader.close();
             logStream.close();
-            if (process != null) {
-                process.destroy();
-                procMgr.remove(process);
-                process = null;
-            }
             io.closeInputOutput();
             io.setOutputVisible(false);
         } catch (IOException e) {
