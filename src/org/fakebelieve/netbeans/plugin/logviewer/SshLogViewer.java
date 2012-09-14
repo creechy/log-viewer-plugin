@@ -14,9 +14,14 @@ import java.io.IOException;
 public class SshLogViewer extends ProcessLogViewer {
 
     // ssh://user@host/...
-
-    public SshLogViewer(String logConfig, String ioName) {
-        super(logConfig, ioName);
+    public SshLogViewer(String logConfig) {
+        super(logConfig);
+        if (logConfig.length() > maxIoName) {
+            int pathStart = logConfig.indexOf("/", 6);
+            String nameStart = logConfig.substring(0, pathStart + 1);
+            String logPath = logConfig.substring(logConfig.length() - (maxIoName - pathStart));
+            ioName = nameStart + "..." + logPath;
+        }
     }
 
     public static boolean handleConfig(String logConfig) {
@@ -33,7 +38,7 @@ public class SshLogViewer extends ProcessLogViewer {
         String userHost = logConfig.substring(5, pathStart);
         String logPath = logConfig.substring(pathStart);
 
-        String lookback = (lookbackLines != 0) ? (" -n " + lookbackLines):"";
+        String lookback = (lookbackLines != 0) ? (" -n " + lookbackLines) : "";
 
         logConfig = "ssh " + userHost + " tail" + lookback + " -f \"" + logPath + "\"";
 

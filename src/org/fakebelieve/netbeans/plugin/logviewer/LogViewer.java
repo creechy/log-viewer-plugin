@@ -25,6 +25,7 @@ import org.openide.windows.InputOutput;
  */
 public class LogViewer implements Runnable {
 
+    protected int maxIoName = 36;
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
     ContextLogSupport logSupport;
     protected InputStream logStream = null;
@@ -50,10 +51,16 @@ public class LogViewer implements Runnable {
      * @param process process whose streams to connect to the output window
      * @param ioName name of the output window tab to use
      */
-    public LogViewer(String logConfig, final String ioName) {
-        this.logConfig = logConfig;
-        this.ioName = ioName;
+
+    public LogViewer() {
         logSupport = new ContextLogSupport("/tmp", null);
+    }
+
+    public LogViewer(String logConfig) {
+        this();
+        
+        this.logConfig = logConfig;
+        this.ioName = logConfig;
     }
 
     public static boolean handleConfig(String logConfig) {
@@ -171,8 +178,7 @@ public class LogViewer implements Runnable {
             logReader.close();
             logStream.close();
             io.getOut().println();
-            io.getOut().println("***");
-            io.getOut().println("*** monitoring ended.");
+            io.getOut().println("* monitoring ended.");
             //io.closeInputOutput();
             //io.setOutputVisible(false);
         } catch (IOException e) {

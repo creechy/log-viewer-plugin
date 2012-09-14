@@ -23,8 +23,12 @@ public class FileLogViewer extends LogViewer {
      * @param process process whose streams to connect to the output window
      * @param ioName name of the output window tab to use
      */
-    public FileLogViewer(String logConfig, final String ioName) {
-        super(logConfig, ioName);
+    public FileLogViewer(String logConfig) {
+        super(logConfig);
+
+        if (logConfig.length() > maxIoName) {
+            this.ioName = "..." + logConfig.substring(logConfig.length() - maxIoName);
+        }
     }
 
     public static boolean handleConfig(String logConfig) {
@@ -35,15 +39,13 @@ public class FileLogViewer extends LogViewer {
     @Override
     public void configViewer() throws IOException {
 
-            File logFile = new File(logConfig);
-            logStream = new FileInputStream(logFile);
-            logReader = new BufferedReader(new InputStreamReader(logStream));
-            lineReader = new LineReader(logReader);
+        File logFile = new File(logConfig);
+        logStream = new FileInputStream(logFile);
+        logReader = new BufferedReader(new InputStreamReader(logStream));
+        lineReader = new LineReader(logReader);
 
-            io.getOut().println("*** -> " + logConfig);
-            io.getOut().println("***");
-            io.getOut().println();
-            log.log(Level.FINE, "Started reader.");
+        io.getOut().println("* -> " + logConfig);
+        io.getOut().println();
+        log.log(Level.FINE, "Started reader.");
     }
-
 }

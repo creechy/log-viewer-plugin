@@ -7,9 +7,8 @@ package org.fakebelieve.netbeans.plugin.logviewer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.DialogDescriptor;
@@ -33,6 +32,7 @@ public class LogViewerButtonAction implements ActionListener {
 
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
     protected Preferences preferences = NbPreferences.forModule(LogViewer.class);
+    protected int nameSize = 30;
 
     protected List<String> loadHistory() {
         List<String> logHistory = new ArrayList<String>();
@@ -82,22 +82,29 @@ public class LogViewerButtonAction implements ActionListener {
             System.out.println(myPanel.getLogConfig());
             String logConfig = myPanel.getLogConfig();
             updateHistory(logHistory, logConfig);
-            
-            String logName = (logConfig.startsWith("!")) ? logConfig.substring(1).trim() : logConfig.trim();
-            if (logName.length() > 40) {
-                logName = logName.substring(0, 20) + "..." + logName.substring(logName.length() - 20);
+            viewLog(logConfig, Integer.parseInt(myPanel.getLookbackConfig()), Integer.parseInt(myPanel.getRefreshConfig()));
+        }
+    }
+
+    public void viewLog(String logConfig, int lookback, int refresh) {
+        LogViewer viewer = null;
+        if (FileLogViewer.handleConfig(logConfig)) {
+            viewer = new FileLogViewer(logConfig);
+        } else if (ProcessLogViewer.handleConfig(logConfig)) {
+            viewer = new ProcessLogViewer(logConfig);
+        } else if (SshLogViewer.handleConfig(logConfig)) {
+            viewer = new SshLogViewer(logConfig);
+        }
+
+        if (viewer != null) {
+            viewer.setLookbackLines(lookback);
+            viewer.setRefreshInterval(refresh);
+
+            try {
+                viewer.showLogViewer();
+            } catch (java.io.IOException e) {
+                log.log(Level.SEVERE, "Showing log action failed.", e);
             }
-
-            // REMIND: This seems a little backwards, should probably rework it.
-            Map map = new HashMap();
-            map.put("viewerAction", new LogViewerAction());
-            map.put("displayName", logName + " (log)");
-            map.put("name", logName + " (log)");
-            map.put("lookback", myPanel.getLookbackConfig());
-            map.put("refresh", myPanel.getRefreshConfig());
-
-            LogViewerAction logAction = LogViewerAction.getLogViewerAction(map);
-            logAction.viewLog(logConfig);
         }
     }
 }

@@ -24,8 +24,11 @@ public class ProcessLogViewer extends LogViewer {
      * @param process process whose streams to connect to the output window
      * @param ioName name of the output window tab to use
      */
-    public ProcessLogViewer(String logConfig, final String ioName) {
-        super(logConfig.substring(1), ioName);
+    public ProcessLogViewer(String logConfig) {
+        super(logConfig.substring(1));
+        if (logConfig.length() > maxIoName) {
+            this.ioName = logConfig.substring(0, maxIoName / 2) + "..." + logConfig.substring(logConfig.length() - maxIoName / 2);
+        }
     }
 
     public static boolean handleConfig(String logConfig) {
@@ -62,8 +65,7 @@ public class ProcessLogViewer extends LogViewer {
         logReader = new BufferedReader(new InputStreamReader(logStream));
         lineReader = new LineReader(logReader);
 
-        io.getOut().println("*** -> " + logConfig);
-        io.getOut().println("***");
+        io.getOut().println("* -> " + logConfig);
         io.getOut().println();
         log.log(Level.FINE, "Started process.");
     }
