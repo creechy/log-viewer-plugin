@@ -29,6 +29,7 @@ public class LogViewer implements Runnable {
 
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
     protected static IOContainer ioc = null;
+    protected static LogViewerTopComponent tc = null;
     protected int maxIoName = 36;
     ContextLogSupport logSupport;
     protected InputStream logStream = null;
@@ -147,8 +148,8 @@ public class LogViewer implements Runnable {
      *
      **/
     public void showLogViewer() throws IOException {
-        if (ioc == null) {
-            ioc = IOContainer.create(new LogViewerTopComponent());
+        if (ioc == null || tc == null || tc.hasClosed()) {
+            ioc = IOContainer.create(tc = new LogViewerTopComponent());
         }
         //InputOutput io = IOProvider.getDefault().getIO("test", new Action[0], ioc);
         //io.getOut().println("Hi there");

@@ -45,7 +45,8 @@ preferredID = "LogViewerTopComponent")
 })
 public final class LogViewerTopComponent extends TopComponent implements IOContainer.Provider {
 
-    private boolean activated;
+    private boolean activated = false;
+    private boolean closed = false;
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
 
     public LogViewerTopComponent() {
@@ -114,6 +115,7 @@ public final class LogViewerTopComponent extends TopComponent implements IOConta
             }
             jTabbedPane1.remove(component);
         }
+        closed = true;
         super.componentClosed();
     }
 
@@ -195,5 +197,9 @@ public final class LogViewerTopComponent extends TopComponent implements IOConta
     @Override
     public void setIcon(JComponent jc, Icon icon) {
         jTabbedPane1.setIconAt(indexOfComponent(jc), icon);
+    }
+
+    boolean hasClosed() {
+        return closed;
     }
 }
