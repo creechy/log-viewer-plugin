@@ -25,9 +25,9 @@ import org.openide.util.NbPreferences;
 id = "org.fakebelieve.netbeans.plugin.logviewer.LogViewerAction")
 @ActionRegistration(
     iconBase = "org/fakebelieve/netbeans/plugin/logviewer/wilbur.png",
-displayName = "#CTL_LogViewerAction")
+displayName = "#CTL_LogViewerButtonAction")
 @ActionReference(path = "Toolbars/Debug", position = 1050)
-@Messages("CTL_LogViewerAction=Log Viewer")
+@Messages("CTL_LogViewerButtonAction=Log Viewer")
 public class LogViewerButtonAction implements ActionListener {
 
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());

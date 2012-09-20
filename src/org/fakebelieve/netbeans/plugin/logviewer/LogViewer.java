@@ -15,8 +15,10 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -25,8 +27,9 @@ import org.openide.windows.InputOutput;
  */
 public class LogViewer implements Runnable {
 
-    protected int maxIoName = 36;
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
+    protected static IOContainer ioc = null;
+    protected int maxIoName = 36;
     ContextLogSupport logSupport;
     protected InputStream logStream = null;
     protected BufferedReader logReader = null;
@@ -51,14 +54,13 @@ public class LogViewer implements Runnable {
      * @param process process whose streams to connect to the output window
      * @param ioName name of the output window tab to use
      */
-
     public LogViewer() {
         logSupport = new ContextLogSupport("/tmp", null);
     }
 
     public LogViewer(String logConfig) {
         this();
-        
+
         this.logConfig = logConfig;
         this.ioName = logConfig;
     }
@@ -107,23 +109,27 @@ public class LogViewer implements Runnable {
     public void run() {
         log.log(Level.FINE, "{0} - isClosed() = {1}", new Object[]{ioName, io.isClosed()});
         if (!checkShouldStop() && !io.isClosed()) {
-            try {
-                if (maxLines > 0 && linesRead >= maxLines) {
-                    io.getOut().reset();
-                    linesRead = ring.output();
-                } // end of if (lines >= MAX_LINES)
+            if (intervalCount == 0) {
+                init();
+            } else {
+                try {
+                    if (maxLines > 0 && linesRead >= maxLines) {
+                        io.getOut().reset();
+                        linesRead = ring.output();
+                    } // end of if (lines >= MAX_LINES)
 
-                String line;
-                while ((line = lineReader.readLine()) != null) {
-                    if ((line = ring.add(line)) != null) {
-                        //io.getOut().println(line);
-                        processLine(line);
-                        linesRead++;
-                    } // end of if ((line = ring.add(line)) != null)
+                    String line;
+                    while ((line = lineReader.readLine()) != null) {
+                        if ((line = ring.add(line)) != null) {
+                            //io.getOut().println(line);
+                            processLine(line);
+                            linesRead++;
+                        } // end of if ((line = ring.add(line)) != null)
+                    }
+
+                } catch (IOException e) {
+                    log.log(Level.SEVERE, "Failed reading log file and printing to output.", e);
                 }
-
-            } catch (IOException e) {
-                log.log(Level.SEVERE, "Failed reading log file and printing to output.", e);
             }
 
             // For the first few intervals, update every second, just to make sure
@@ -141,7 +147,14 @@ public class LogViewer implements Runnable {
      *
      **/
     public void showLogViewer() throws IOException {
-        io = IOProvider.getDefault().getIO(ioName, true);
+        if (ioc == null) {
+            ioc = IOContainer.create(new LogViewerTopComponent());
+        }
+        //InputOutput io = IOProvider.getDefault().getIO("test", new Action[0], ioc);
+        //io.getOut().println("Hi there");
+        //io.select();
+
+        io = IOProvider.getDefault().getIO(ioName, new Action[0], ioc);
         io.getOut().reset();
         io.select();
 
@@ -165,7 +178,7 @@ public class LogViewer implements Runnable {
             log.log(Level.FINE, "Showing error.");
         }
 
-        init();
+        //init();
         task.schedule(0);
     }
 
