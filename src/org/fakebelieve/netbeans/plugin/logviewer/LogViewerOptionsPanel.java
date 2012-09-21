@@ -9,6 +9,8 @@ import org.openide.util.NbPreferences;
 final class LogViewerOptionsPanel extends javax.swing.JPanel {
 
     private final LogViewerOptionsPanelController controller;
+    public static final String DEFAULT_SSH_COMMAND = "/usr/bin/ssh -l %r %h";
+    public static final String DEFAULT_REMOTE_COMMAND = "tail -n %n -f %f";
 
     LogViewerOptionsPanel(LogViewerOptionsPanelController controller) {
         this.controller = controller;
@@ -28,10 +30,21 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         labelSshCommand = new javax.swing.JLabel();
         textFieldSshCommand = new javax.swing.JTextField();
+        labelRemoteCmd = new javax.swing.JLabel();
+        textFieldRemoteCmd = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(labelSshCommand, org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.labelSshCommand.text")); // NOI18N
 
         textFieldSshCommand.setText(org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.textFieldSshCommand.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(labelRemoteCmd, org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.labelRemoteCmd.text")); // NOI18N
+
+        textFieldRemoteCmd.setText(org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.textFieldRemoteCmd.text")); // NOI18N
+        textFieldRemoteCmd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                textFieldRemoteCmdActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -39,9 +52,13 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(labelSshCommand)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(labelRemoteCmd)
+                    .addComponent(labelSshCommand))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textFieldSshCommand, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(textFieldSshCommand)
+                    .addComponent(textFieldRemoteCmd, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -50,7 +67,11 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(labelSshCommand)
                     .addComponent(textFieldSshCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelRemoteCmd)
+                    .addComponent(textFieldRemoteCmd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -65,13 +86,18 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void textFieldRemoteCmdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textFieldRemoteCmdActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_textFieldRemoteCmdActionPerformed
+
     void load() {
         // TODO read settings and initialize GUI
         // Example:        
         // someCheckBox.setSelected(Preferences.userNodeForPackage(LogViewerOptionsPanel.class).getBoolean("someFlag", false));
         // or for org.openide.util with API spec. version >= 7.4:
         // someCheckBox.setSelected(NbPreferences.forModule(LogViewerOptionsPanel.class).getBoolean("someFlag", false));
-        textFieldSshCommand.setText(NbPreferences.forModule(LogViewerOptionsPanel.class).get("sshCommand", "/usr/bin/ssh"));
+        textFieldSshCommand.setText(NbPreferences.forModule(LogViewerOptionsPanel.class).get("sshCommand", DEFAULT_SSH_COMMAND));
+        textFieldRemoteCmd.setText(NbPreferences.forModule(LogViewerOptionsPanel.class).get("remoteCommand", DEFAULT_REMOTE_COMMAND));
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
     }
@@ -82,6 +108,7 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         // Preferences.userNodeForPackage(LogViewerOptionsPanel.class).putBoolean("someFlag", someCheckBox.isSelected());
         // or for org.openide.util with API spec. version >= 7.4:
         NbPreferences.forModule(LogViewerOptionsPanel.class).put("sshCommand", textFieldSshCommand.getText());
+        NbPreferences.forModule(LogViewerOptionsPanel.class).put("remoteCommand", textFieldRemoteCmd.getText());
         // or:
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
     }
@@ -92,7 +119,9 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel labelRemoteCmd;
     private javax.swing.JLabel labelSshCommand;
+    private javax.swing.JTextField textFieldRemoteCmd;
     private javax.swing.JTextField textFieldSshCommand;
     // End of variables declaration//GEN-END:variables
 }

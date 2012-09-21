@@ -31,11 +31,17 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
+              <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="labelSshCommand" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="labelRemoteCmd" min="-2" max="-2" attributes="0"/>
+                      <Component id="labelSshCommand" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="textFieldSshCommand" pref="266" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="textFieldSshCommand" max="32767" attributes="0"/>
+                      <Component id="textFieldRemoteCmd" pref="243" max="32767" attributes="0"/>
+                  </Group>
               </Group>
           </Group>
         </DimensionLayout>
@@ -47,7 +53,12 @@
                       <Component id="labelSshCommand" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="textFieldSshCommand" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="66" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="labelRemoteCmd" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="textFieldRemoteCmd" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace pref="32" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -66,6 +77,23 @@
               <ResourceString bundle="org/fakebelieve/netbeans/plugin/logviewer/Bundle.properties" key="LogViewerOptionsPanel.textFieldSshCommand.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="labelRemoteCmd">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/fakebelieve/netbeans/plugin/logviewer/Bundle.properties" key="LogViewerOptionsPanel.labelRemoteCmd.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JTextField" name="textFieldRemoteCmd">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/fakebelieve/netbeans/plugin/logviewer/Bundle.properties" key="LogViewerOptionsPanel.textFieldRemoteCmd.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="textFieldRemoteCmdActionPerformed"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

@@ -24,10 +24,10 @@ public class FileLogViewer extends LogViewer {
      * @param ioName name of the output window tab to use
      */
     public FileLogViewer(String logConfig) {
-        super(logConfig);
-
         if (logConfig.length() > maxIoName) {
-            this.ioName = "..." + logConfig.substring(logConfig.length() - maxIoName);
+            init(logConfig, "..." + logConfig.substring(logConfig.length() - maxIoName));
+        } else {
+            init(logConfig, logConfig);
         }
     }
 

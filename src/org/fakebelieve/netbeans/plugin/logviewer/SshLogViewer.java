@@ -20,12 +20,13 @@ public class SshLogViewer extends ProcessLogViewer {
 
     // ssh://user@host/...
     public SshLogViewer(String logConfig) {
-        super(logConfig);
         if (logConfig.length() > maxIoName) {
             int pathStart = logConfig.indexOf("/", 6);
             String nameStart = logConfig.substring(0, pathStart + 1);
             String logPath = logConfig.substring(logConfig.length() - (maxIoName - pathStart));
-            ioName = nameStart + "..." + logPath;
+            init(logConfig, nameStart + "..." + logPath);
+        } else {
+            init(logConfig, logConfig);
         }
     }
 
@@ -40,25 +41,33 @@ public class SshLogViewer extends ProcessLogViewer {
             throw new FileNotFoundException("Cannot Parse \"" + logConfig + "\"");
         }
 
-        String userHost = logConfig.substring(5, pathStart);
+        String userHost = logConfig.substring(6, pathStart);
+        int userHostSeparator = userHost.indexOf("@");
+        String user = (userHostSeparator >= 0) ? userHost.substring(0, userHostSeparator) : System.getProperty("user.name");
+        String host = (userHostSeparator >= 0) ? userHost.substring(userHostSeparator + 1) : userHost;
+
         String logPath = logConfig.substring(pathStart);
 
-        String sshCommand = NbPreferences.forModule(LogViewerOptionsPanel.class).get("sshCommand", "/usr/bin/ssh");
-
+        String sshCommand = NbPreferences.forModule(LogViewerOptionsPanel.class).
+                get("sshCommand", LogViewerOptionsPanel.DEFAULT_SSH_COMMAND);
+        String remoteCmd = NbPreferences.forModule(LogViewerOptionsPanel.class).
+                get("remoteCommand", LogViewerOptionsPanel.DEFAULT_REMOTE_COMMAND);
 
         List<String> command = new ArrayList<String>();
         StrTokenizer st = new StrTokenizer(sshCommand, StrMatcher.charSetMatcher(" \t"), StrMatcher.quoteMatcher());
         while (st.hasNext()) {
-            command.add(st.nextToken());
+            String arg = st.nextToken();
+            arg = arg.replace("%h", host);
+            arg = arg.replace("%r", user);
+            command.add(arg);
         }
-        command.add(userHost);
-        command.add("tail");
-        if (lookbackLines > 0) {
-            command.add("-n");
-            command.add(String.valueOf(lookbackLines));
+        st = new StrTokenizer(remoteCmd, StrMatcher.charSetMatcher(" \t"), StrMatcher.quoteMatcher());
+        while (st.hasNext()) {
+            String arg = st.nextToken();
+            arg = arg.replace("%n", String.valueOf(lookbackLines));
+            arg = arg.replace("%f", logPath);
+            command.add(arg);
         }
-        command.add("-f");
-        command.add(logPath);
 
         startCommand(command);
     }

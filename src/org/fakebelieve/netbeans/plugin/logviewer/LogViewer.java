@@ -59,11 +59,9 @@ public class LogViewer implements Runnable {
         logSupport = new ContextLogSupport("/tmp", null);
     }
 
-    public LogViewer(String logConfig) {
-        this();
-
+    public void init(String logConfig, String ioName) {
         this.logConfig = logConfig;
-        this.ioName = logConfig;
+        this.ioName = ioName;
     }
 
     public static boolean handleConfig(String logConfig) {

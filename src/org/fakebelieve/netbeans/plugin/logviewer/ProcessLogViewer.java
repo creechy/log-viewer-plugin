@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import org.apache.commons.lang.text.StrMatcher;
+import org.apache.commons.lang.text.StrTokenizer;
 
 /*
  * Netbeans Logging Levels - add option "-J-Dorg.netbeans.level=FINEST" into netbeans.conf file.
@@ -19,6 +21,10 @@ public class ProcessLogViewer extends LogViewer {
     private static ProcessManager procMgr = new ProcessManager();
     private Process process = null;
 
+    public ProcessLogViewer() {
+        super();
+    }
+    
     /**
      * Connects a given process to the output window. Returns immediately, but threads are started that
      * copy streams of the process to/from the output window.
@@ -27,9 +33,10 @@ public class ProcessLogViewer extends LogViewer {
      * @param ioName name of the output window tab to use
      */
     public ProcessLogViewer(String logConfig) {
-        super(logConfig.substring(1));
         if (logConfig.length() > maxIoName) {
-            this.ioName = logConfig.substring(0, maxIoName / 2) + "..." + logConfig.substring(logConfig.length() - maxIoName / 2);
+            init(logConfig, logConfig.substring(0, maxIoName / 2) + "..." + logConfig.substring(logConfig.length() - maxIoName / 2));
+        } else {
+            init(logConfig, logConfig);
         }
     }
 
@@ -59,9 +66,11 @@ public class ProcessLogViewer extends LogViewer {
     public void configViewer() throws IOException {
 
         List<String> command = new ArrayList<String>();
-        command.add("/bin/sh");
-        command.add("-c");
-        command.add(logConfig);
+        StrTokenizer st = new StrTokenizer(logConfig, StrMatcher.charSetMatcher(" \t"), StrMatcher.quoteMatcher());
+        while (st.hasNext()) {
+            command.add(st.nextToken());
+        }
+
         startCommand(command);
     }
 
