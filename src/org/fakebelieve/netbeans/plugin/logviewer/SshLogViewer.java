@@ -6,6 +6,11 @@ package org.fakebelieve.netbeans.plugin.logviewer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.lang.text.StrMatcher;
+import org.apache.commons.lang.text.StrTokenizer;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -38,10 +43,23 @@ public class SshLogViewer extends ProcessLogViewer {
         String userHost = logConfig.substring(5, pathStart);
         String logPath = logConfig.substring(pathStart);
 
-        String lookback = (lookbackLines != 0) ? (" -n " + lookbackLines) : "";
+        String sshCommand = NbPreferences.forModule(LogViewerOptionsPanel.class).get("sshCommand", "/usr/bin/ssh");
 
-        logConfig = "ssh " + userHost + " tail" + lookback + " -f \"" + logPath + "\"";
 
-        super.configViewer();
+        List<String> command = new ArrayList<String>();
+        StrTokenizer st = new StrTokenizer(sshCommand, StrMatcher.charSetMatcher(" \t"), StrMatcher.quoteMatcher());
+        while (st.hasNext()) {
+            command.add(st.nextToken());
+        }
+        command.add(userHost);
+        command.add("tail");
+        if (lookbackLines > 0) {
+            command.add("-n");
+            command.add(String.valueOf(lookbackLines));
+        }
+        command.add("-f");
+        command.add(logPath);
+
+        startCommand(command);
     }
 }

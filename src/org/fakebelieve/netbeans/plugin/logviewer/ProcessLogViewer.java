@@ -7,6 +7,8 @@ package org.fakebelieve.netbeans.plugin.logviewer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 
 /*
@@ -56,8 +58,17 @@ public class ProcessLogViewer extends LogViewer {
     @Override
     public void configViewer() throws IOException {
 
+        List<String> command = new ArrayList<String>();
+        command.add("/bin/sh");
+        command.add("-c");
+        command.add(logConfig);
+        startCommand(command);
+    }
+
+    public void startCommand(List<String> command) throws IOException {
+        log.log(Level.FINE, command.toString());
         ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("/bin/sh", "-c", logConfig);
+        processBuilder.command(command);
         processBuilder.redirectErrorStream(true);
         process = processBuilder.start();
         procMgr.add(process);
