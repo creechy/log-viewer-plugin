@@ -48,10 +48,8 @@ public class SshLogViewer extends ProcessLogViewer {
 
         String logPath = logConfig.substring(pathStart);
 
-        String sshCommand = NbPreferences.forModule(LogViewerOptionsPanel.class).
-                get("sshCommand", LogViewerOptionsPanel.DEFAULT_SSH_COMMAND);
-        String remoteCmd = NbPreferences.forModule(LogViewerOptionsPanel.class).
-                get("remoteCommand", LogViewerOptionsPanel.DEFAULT_REMOTE_COMMAND);
+        String sshCommand = LogViewerOptions.getSshCommand();
+        String remoteCmd = LogViewerOptions.getRemoteCommand();
 
         List<String> command = new ArrayList<String>();
         StrTokenizer st = new StrTokenizer(sshCommand, StrMatcher.charSetMatcher(" \t"), StrMatcher.quoteMatcher());
@@ -59,6 +57,7 @@ public class SshLogViewer extends ProcessLogViewer {
             String arg = st.nextToken();
             arg = arg.replace("%h", host);
             arg = arg.replace("%r", user);
+            arg = arg.replace("%d", userHost);
             command.add(arg);
         }
         st = new StrTokenizer(remoteCmd, StrMatcher.charSetMatcher(" \t"), StrMatcher.quoteMatcher());
