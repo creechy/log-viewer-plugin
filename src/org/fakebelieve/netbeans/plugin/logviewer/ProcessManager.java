@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class ProcessManager extends Thread {
 
-    Set<Process> processes = new HashSet();
+    Set<Process> processes = new HashSet<Process>();
 
     public ProcessManager() {
         Runtime.getRuntime().addShutdownHook(this);
