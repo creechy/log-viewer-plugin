@@ -34,33 +34,34 @@ public class LogViewerButtonAction implements ActionListener {
     protected Preferences preferences = NbPreferences.forModule(LogViewer.class);
     protected int nameSize = 30;
 
-    protected List<String> loadHistory() {
-        List<String> logHistory = new ArrayList<String>();
+    protected List<History> loadHistory() {
+        List<History> logHistory = new ArrayList<History>();
         for (int idx = 0; idx < 15; idx++) {
-            String text = preferences.get("history-" + idx, null);
-            if (text != null && !text.isEmpty()) {
-                logHistory.add(text);
+            History history = new History(preferences, "history-" + idx);
+            if (history.getCommand() != null && !history.getCommand().isEmpty()) {
+                logHistory.add(history);
             }
         }
         return logHistory;
     }
 
-    protected void updateHistory(List<String> logHistory, String logConfig) {
+    protected void updateHistory(List<History> logHistory, History logConfig) {
         //
         // Save prefs in MRU order that way, crapshit ones will drop off the
         // list eventually.
         //
         for (int idx = 0; idx < logHistory.size(); idx++) {
-            if (logHistory.get(idx).equals(logConfig)) {
+            if (logHistory.get(idx).getCommand().equals(logConfig.getCommand())) {
                 logHistory.remove(idx);
                 break;
             }
         }
+
         logHistory.add(0, logConfig);
 
         for (int idx = 0; idx < 15; idx++) {
             if (idx < logHistory.size()) {
-                preferences.put("history-" + idx, logHistory.get(idx));
+                logHistory.get(idx).update(preferences, "history-" + idx);
             } else {
                 preferences.remove("history-" + idx);
             }
@@ -71,8 +72,8 @@ public class LogViewerButtonAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         LogViewerPanel myPanel = new LogViewerPanel();
 
-        List<String> logHistory = loadHistory();
-        myPanel.setLogHistory(logHistory.toArray(new String[0]));
+        List<History> logHistory = loadHistory();
+        myPanel.setLogHistory(logHistory);
 
         DialogDescriptor dd = new DialogDescriptor(myPanel, "Log Viewer Chooser");
 
@@ -81,7 +82,8 @@ public class LogViewerButtonAction implements ActionListener {
             // user clicked yes, do something here, for example:
             System.out.println(myPanel.getLogConfig());
             String logConfig = myPanel.getLogConfig();
-            updateHistory(logHistory, logConfig);
+            History history = new History(myPanel.getLogConfig(), Integer.parseInt(myPanel.getRefreshConfig()), Integer.parseInt(myPanel.getLookbackConfig()));
+            updateHistory(logHistory, history);
             viewLog(logConfig, Integer.parseInt(myPanel.getLookbackConfig()), Integer.parseInt(myPanel.getRefreshConfig()));
         }
     }

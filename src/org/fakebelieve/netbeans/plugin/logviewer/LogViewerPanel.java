@@ -4,7 +4,7 @@
  */
 package org.fakebelieve.netbeans.plugin.logviewer;
 
-import javax.swing.ComboBoxModel;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 
 /**
@@ -12,6 +12,8 @@ import javax.swing.DefaultComboBoxModel;
  * @author mock
  */
 public class LogViewerPanel extends javax.swing.JPanel {
+
+    private List<History> history = null;
 
     /**
      * Creates new form LogViewerPanel
@@ -22,10 +24,12 @@ public class LogViewerPanel extends javax.swing.JPanel {
         refreshConfig.setSelectedIndex(2);
     }
 
-    public void setLogHistory(String[] objects) {
+    public void setLogHistory(List<History> objects) {
+        history = objects;
         DefaultComboBoxModel model = (DefaultComboBoxModel) logConfig.getModel();
-        for (String object : objects) {
-            model.addElement(object);
+        model.addElement("");
+        for (History object : objects) {
+            model.addElement(object.getCommand());
         }
     }
 
@@ -65,6 +69,11 @@ public class LogViewerPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jLabel3.text")); // NOI18N
 
         logConfig.setEditable(true);
+        logConfig.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logConfigActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(LogViewerPanel.class, "LogViewerPanel.jLabel2.text")); // NOI18N
 
@@ -119,6 +128,23 @@ public class LogViewerPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void logConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logConfigActionPerformed
+        int newIndex = logConfig.getSelectedIndex();
+
+        if ("comboBoxEdited".equals(evt.getActionCommand())) {
+            // User has typed in a string; only possible with an editable combobox
+        } else if ("comboBoxChanged".equals(evt.getActionCommand())) {
+            // User has selected an item; it may be the same item
+            if (newIndex == 0) {
+                lookbackConfig.setSelectedIndex(2);
+                refreshConfig.setSelectedIndex(2);
+            } else if (newIndex > 0 && newIndex <= history.size()) {
+                lookbackConfig.setSelectedItem(String.valueOf(history.get(newIndex - 1).getLookback()));
+                refreshConfig.setSelectedItem(String.valueOf(history.get(newIndex - 1).getRefresh()));
+            }
+        }
+    }//GEN-LAST:event_logConfigActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
