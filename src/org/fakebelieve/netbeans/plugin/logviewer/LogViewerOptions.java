@@ -77,7 +77,7 @@ public class LogViewerOptions {
             if (idx < logHistory.size()) {
                 logHistory.get(idx).update(preferences, "history-" + idx);
             } else {
-                preferences.remove("history-" + idx);
+                History.remove(preferences, "history-" + idx);
             }
         }
     }

@@ -34,6 +34,12 @@ public class History {
        preferences.putInt(prefix + ".lookback", lookback);
     }
 
+    public static void remove(Preferences preferences, String prefix) {
+        preferences.remove(prefix + ".command");
+        preferences.remove(prefix + ".refresh");
+        preferences.remove(prefix + ".lookback");
+    }
+
     public String getCommand() {
         return command;
     }
