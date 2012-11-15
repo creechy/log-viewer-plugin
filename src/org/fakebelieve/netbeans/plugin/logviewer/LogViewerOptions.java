@@ -4,7 +4,9 @@
  */
 package org.fakebelieve.netbeans.plugin.logviewer;
 
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
 /**
@@ -16,27 +18,67 @@ public class LogViewerOptions {
     public static final String DEFAULT_UNIX_SSH_COMMAND = "/usr/bin/ssh -l %r %h";
     public static final String DEFAULT_WINDOWS_SSH_COMMAND = "\"C:\\Program Files\\PuTTY\\plink.exe\" -l %r %h";
     public static final String DEFAULT_REMOTE_COMMAND = "tail -n %n -f %f";
+    public static Preferences preferences = NbPreferences.forModule(LogViewerOptions.class);
+
 
     private static boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().startsWith("windows");
     }
+
     public static String getSshCommand() {
         if (isWindows()) {
-         return NbPreferences.forModule(LogViewerOptionsPanel.class).get("sshCommand", DEFAULT_WINDOWS_SSH_COMMAND);
+            return preferences.get("sshCommand", DEFAULT_WINDOWS_SSH_COMMAND);
         } else {
-         return NbPreferences.forModule(LogViewerOptionsPanel.class).get("sshCommand", DEFAULT_UNIX_SSH_COMMAND);
+            return preferences.get("sshCommand", DEFAULT_UNIX_SSH_COMMAND);
         }
     }
-    
+
     public static void setSshCommand(String command) {
-        NbPreferences.forModule(LogViewerOptionsPanel.class).put("sshCommand", command);        
+        preferences.put("sshCommand", command);
     }
 
     public static String getRemoteCommand() {
-        return NbPreferences.forModule(LogViewerOptionsPanel.class).get("remoteCommand", DEFAULT_REMOTE_COMMAND);
+        return preferences.get("remoteCommand", DEFAULT_REMOTE_COMMAND);
     }
 
     public static void setRemoteCommand(String command) {
-        NbPreferences.forModule(LogViewerOptionsPanel.class).put("remoteCommand", command);
+        preferences.put("remoteCommand", command);
+    }
+
+    public static List<History> loadHistory() {
+        List<History> logHistory = new ArrayList<History>();
+        for (int idx = 0; idx < 15; idx++) {
+            History history = new History(preferences, "history-" + idx);
+            if (history.getCommand() != null && !history.getCommand().isEmpty()) {
+                logHistory.add(history);
+            }
+        }
+        return logHistory;
+    }
+
+    public static void updateHistory(List<History> logHistory, History logConfig) {
+        //
+        // Save prefs in MRU order that way, crapshit ones will drop off the
+        // list eventually.
+        //
+        for (int idx = 0; idx < logHistory.size(); idx++) {
+            if (logHistory.get(idx).getCommand().equals(logConfig.getCommand())) {
+                logHistory.remove(idx);
+                break;
+            }
+        }
+
+        logHistory.add(0, logConfig);
+        saveHistory(logHistory);
+    }
+
+    public static void saveHistory(List<History> logHistory) {
+        for (int idx = 0; idx < 15; idx++) {
+            if (idx < logHistory.size()) {
+                logHistory.get(idx).update(preferences, "history-" + idx);
+            } else {
+                preferences.remove("history-" + idx);
+            }
+        }
     }
 }

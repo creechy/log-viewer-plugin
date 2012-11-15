@@ -6,11 +6,9 @@ package org.fakebelieve.netbeans.plugin.logviewer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -18,7 +16,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.NbPreferences;
 
 @ActionID(
     category = "Debug",
@@ -31,48 +28,14 @@ displayName = "#CTL_LogViewerButtonAction")
 public class LogViewerButtonAction implements ActionListener {
 
     protected static final Logger log = Logger.getLogger(LogViewer.class.getName());
-    protected Preferences preferences = NbPreferences.forModule(LogViewer.class);
     protected int nameSize = 30;
 
-    protected List<History> loadHistory() {
-        List<History> logHistory = new ArrayList<History>();
-        for (int idx = 0; idx < 15; idx++) {
-            History history = new History(preferences, "history-" + idx);
-            if (history.getCommand() != null && !history.getCommand().isEmpty()) {
-                logHistory.add(history);
-            }
-        }
-        return logHistory;
-    }
-
-    protected void updateHistory(List<History> logHistory, History logConfig) {
-        //
-        // Save prefs in MRU order that way, crapshit ones will drop off the
-        // list eventually.
-        //
-        for (int idx = 0; idx < logHistory.size(); idx++) {
-            if (logHistory.get(idx).getCommand().equals(logConfig.getCommand())) {
-                logHistory.remove(idx);
-                break;
-            }
-        }
-
-        logHistory.add(0, logConfig);
-
-        for (int idx = 0; idx < 15; idx++) {
-            if (idx < logHistory.size()) {
-                logHistory.get(idx).update(preferences, "history-" + idx);
-            } else {
-                preferences.remove("history-" + idx);
-            }
-        }
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         LogViewerPanel myPanel = new LogViewerPanel();
 
-        List<History> logHistory = loadHistory();
+        List<History> logHistory = LogViewerOptions.loadHistory();
         myPanel.setLogHistory(logHistory);
 
         DialogDescriptor dd = new DialogDescriptor(myPanel, "Log Viewer Chooser");
@@ -83,7 +46,7 @@ public class LogViewerButtonAction implements ActionListener {
             System.out.println(myPanel.getLogConfig());
             String logConfig = myPanel.getLogConfig();
             History history = new History(myPanel.getLogConfig(), Integer.parseInt(myPanel.getRefreshConfig()), Integer.parseInt(myPanel.getLookbackConfig()));
-            updateHistory(logHistory, history);
+            LogViewerOptions.updateHistory(logHistory, history);
             viewLog(logConfig, Integer.parseInt(myPanel.getLookbackConfig()), Integer.parseInt(myPanel.getRefreshConfig()));
         }
     }

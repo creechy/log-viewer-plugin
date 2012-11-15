@@ -4,6 +4,9 @@
  */
 package org.fakebelieve.netbeans.plugin.logviewer;
 
+import java.util.List;
+import javax.swing.DefaultListModel;
+
 final class LogViewerOptionsPanel extends javax.swing.JPanel {
 
     private final LogViewerOptionsPanelController controller;
@@ -30,6 +33,9 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         textFieldRemoteCmd = new javax.swing.JTextField();
         labelSshMarkup = new javax.swing.JLabel();
         labelRemoteMarkup = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        historyList = new javax.swing.JList();
+        removeButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(labelSshCommand, org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.labelSshCommand.text")); // NOI18N
 
@@ -47,6 +53,20 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(labelSshMarkup, org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.labelSshMarkup.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(labelRemoteMarkup, org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.labelRemoteMarkup.text")); // NOI18N
+
+        historyList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane1.setViewportView(historyList);
+
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(LogViewerOptionsPanel.class, "LogViewerOptionsPanel.removeButton.text")); // NOI18N
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -72,6 +92,13 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
                         .addComponent(labelRemoteMarkup)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(textFieldRemoteCmd)))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1)
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(removeButton))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -88,7 +115,10 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
                     .addComponent(textFieldRemoteCmd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labelRemoteMarkup)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(removeButton))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -107,6 +137,17 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_textFieldRemoteCmdActionPerformed
 
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        // TODO add your handling code here:
+        int selectedIndex = historyList.getSelectedIndex();
+        if (selectedIndex >= 0) {
+            ((DefaultListModel) historyList.getModel()).removeElementAt(selectedIndex);
+            List<History> list = LogViewerOptions.loadHistory();
+            list.remove(selectedIndex);
+            LogViewerOptions.saveHistory(list);
+        }
+    }//GEN-LAST:event_removeButtonActionPerformed
+
     void load() {
         // TODO read settings and initialize GUI
         // Example:        
@@ -115,6 +156,13 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         // someCheckBox.setSelected(NbPreferences.forModule(LogViewerOptionsPanel.class).getBoolean("someFlag", false));
         textFieldSshCommand.setText(LogViewerOptions.getSshCommand());
         textFieldRemoteCmd.setText(LogViewerOptions.getRemoteCommand());
+
+        List<History> list = LogViewerOptions.loadHistory();
+        DefaultListModel listModel = new DefaultListModel();
+        historyList.setModel(listModel);
+        for (History history : list) {
+            listModel.addElement(history.getCommand());
+        }
         // or:
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
     }
@@ -135,11 +183,14 @@ final class LogViewerOptionsPanel extends javax.swing.JPanel {
         return true;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList historyList;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel labelRemoteCmd;
     private javax.swing.JLabel labelRemoteMarkup;
     private javax.swing.JLabel labelSshCommand;
     private javax.swing.JLabel labelSshMarkup;
+    private javax.swing.JButton removeButton;
     private javax.swing.JTextField textFieldRemoteCmd;
     private javax.swing.JTextField textFieldSshCommand;
     // End of variables declaration//GEN-END:variables
