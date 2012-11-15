@@ -199,6 +199,10 @@ public class LogViewer implements Runnable {
     }
 
     private void processLine(String line) {
+        while (line.charAt(line.length()-1) == '\r' || line.charAt(line.length()-1) == '\n') {
+            line = line.substring(0, line.length() - 1);
+        }
+
         ContextLogSupport.LineInfo lineInfo = logSupport.analyzeLine(line);
         if (lineInfo.isError()) {
             if (lineInfo.isAccessible()) {
